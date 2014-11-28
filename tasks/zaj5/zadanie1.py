@@ -27,7 +27,12 @@ def load_data(path):
     Podpowiedźź: starczą dwie linikji kodu definicja dtype oraz otwarcie macierzy.
     Typ danych jest złożony --- należy użyć Structured Array.
     """
-
+    dtype = np.dtype([
+    ("7gram", 'a7'),
+    ('count', 'u4')])
+   
+    data = np.memmap(path, dtype=dtype)
+    return data
 
 def suggester(input, data):
     """
@@ -65,3 +70,7 @@ def suggester(input, data):
      ('e', 0.07352941176470588),
      ('i', 0.014705882352941176)]
     """
+    
+if __name__=="__main__":
+    pass
+
