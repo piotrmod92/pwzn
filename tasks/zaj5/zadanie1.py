@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from numpy import char
-
+import sys
 import numpy as np
 
 def next_item(input):
@@ -71,7 +71,16 @@ def suggester(input, data):
      ('e', 0.07352941176470588),
      ('i', 0.014705882352941176)]
     """
+    #szukanie poczatku i konca
+    next = next_item(input)
+    indices = np.searchsorted(data['7gram'], [input, next])
+    data = data[indices[0]:indices[1]]
+    #liczenie prawdopodobienstw
+    n_sum = sum( [ n for ng, n in data ] )
+    ngram_list = [(chr(ngram[-1]), n/n_sum) for ngram, n in data]
+    return sorted(ngram_list, key = lambda x: x[1], reverse = True)
     
 if __name__=="__main__":
-    pass
+    data = load_data(sys.argv[1])
+    suggester('funkcj', data)
 

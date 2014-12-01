@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-
+import struct 
+import mmap
+import numpy as np
+import os
 
 class InvalidFormatError(IOError):
     pass
@@ -63,3 +66,30 @@ def load_data(filename):
 
     W zadaniu 3 będziecie na tym pliku robić obliczenia.
     """
+    #sprawdzenie rozmiaru magicznych bajtow i naglowka
+    statinfo = os.stat(filename)
+    if statinfo.st_size < 30:
+        raise InvalidFormatError
+    
+    #odczytanie magicznych bajtow i naglowka
+    s = struct.Struct("<16s3H2I") #little endian, 16 char, 3 unsigned short, 2 unsigned int
+    with open(filename, 'rb') as f:
+        data = mmap.mmap(f.fileno(), 30, mmap.MAP_SHARED, mmap.PROT_READ)
+    h = s.unpack(data)
+    mbytes, ver1, ver2, size, number, offset = h
+    
+    #zglaszanie bledu
+    if mbytes != b'6o\xfdo\xe2\xa4C\x90\x98\xb2t!\xbeurn' or ver1 != 3 or statinfo.st_size != offset + number*size:
+        raise InvalidFormatError
+    
+    #definiowanie struktury danych
+    dtype = np.dtype([
+    ("event_id", 'uint16'),
+    ("particle_position", '3float32'),
+    ("particle_mass", 'float32'),
+    ('particle_velocity', '3float32'),
+    ('empty', 'a98')]) #padding = size-30 = 98
+    
+    #załadowanie reszty pliku
+    return np.memmap(filename, dtype, offset = offset)
+    
